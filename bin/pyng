@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" Script launching the Pyng main function. """
+
+import subprocess
+import sys
+# local
+
+#import ipdb;ipdb.set_trace()
+
+from pyng.config import PYNG_PIDFILE
+from pyng.celerycontroller import CeleryController
+
+
+def main():
+    ctl = CeleryController()
+    ctl.start()
+
+
+
+main()
