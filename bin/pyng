@@ -4,18 +4,28 @@
 
 import subprocess
 import sys
-# local
-
 #import ipdb;ipdb.set_trace()
-
+# local
 from pyng.config import PYNG_PIDFILE
 from pyng.celerycontroller import CeleryController
+from pyng.monitor import HttpStatusMonitor
 
 
-def main():
+def main(argv):
+    command = None
+    if len(argv) == 2:
+        command = argv[1]
     ctl = CeleryController()
-    ctl.start()
+    if command == 'start':
+        ctl.start()
+    elif command == 'stop':
+        ctl.stop()
+    elif command == 'restart':
+        ctl.restart()
+    elif command == 'look':
+        ctl.running_celerys()
 
 
 
-main()
+if __name__ == '__main__':
+    main(sys.argv)

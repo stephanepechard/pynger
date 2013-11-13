@@ -1,45 +1,84 @@
 # -*- coding: utf-8 -*-
 """ A controller to rule over Celery. """
 
+import locale
+import os
+import re
+import signal
 import subprocess
-from subprocess import Popen, PIPE
+import sys
 import time
+# pipped
+import sh
 # local
 from pyng.config import PYNG_PIDFILE, LOG
 
-# see https://github.com/celery/celery/blob/9c00d0c67c0844e4b62d60839c55a79c64666c93/extra/generic-init.d/celerybeat
+
 class CeleryController(object):
 
     def __init__(self):
-        self.pid = None
+        self.running = False
+        self.pid = self.find_pid()
 
 
     def start(self):
         LOG.info('starting celery...')
-        commands = ('./venv/local/bin/celery', 'beat', '--detach',
+        commands = ('./venv/local/bin/celery', 'beat',# '--detach',
+                    '--loglevel=DEBUG',
                     '--pidfile=' + PYNG_PIDFILE, '--config=pyng.celeryconfig')
         subprocess.call(commands)
+        self.running = True
         LOG.info('done!')
 
 
-    def reload_celery(self):
+    def stop(self):
+        if self.running:
+            LOG.info('stopping celery...')
+            os.kill(int(self.pid), signal.SIGTERM)
+            self.running = False
+            LOG.info('done!')
+        else:
+            sys.exit("Not running, nothing to stop...")
+
+
+    def restart(self):
         self.stop()
         time.sleep(2)
         self.start()
 
 
-    def stop_celery(self):
-        self.reload_pid()
-        LOG.info('stopping celery...')
-        LOG.info('done')
-
-
-    def reload_pid(self):
+    def find_pid(self):
         self.pid = None
         try:
             with open(PYNG_PIDFILE, 'r') as pidfile:
-                self.pid = pidfile.readline()
+                self.pid = pidfile.readline().strip()
+                self.running = True
                 LOG.info("PID is: " + self.pid)
         except FileNotFoundError:
-            LOG.warning("PID file does not exists")
+            LOG.info("PID file does not exists")
+            self.running = False
+
+        return(self.pid)
+
+
+    def running_celerys(self):
+        """ Works well on a Debian, didn't check other OS. """
+        ps = subprocess.Popen(('ps', 'x'), stdout=subprocess.PIPE)
+        output = ps.communicate()[0]
+        processes = []
+        pid = None
+        for line in output.decode(locale.getdefaultlocale()[1]).split('\n'):
+            if PYNG_PIDFILE in line:
+                first_space = line.find(' ')
+                processes.append(line[:first_space])
+
+        if len(processes) > 1:
+            LOG.warning("You have more than one celery process, this is not good...")
+        return(processes)
+
+
+    def set_config(self):
+        pass
+
+
 
