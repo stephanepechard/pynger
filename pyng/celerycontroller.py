@@ -3,15 +3,11 @@
 
 import locale
 import os
-import re
 import signal
 import subprocess
-import sys
 import time
-# pipped
-import sh
 # local
-from pyng.config import PYNG_PIDFILE, LOG
+from .config import PYNG_PIDFILE, LOG
 
 
 class CeleryController(object):
@@ -22,23 +18,23 @@ class CeleryController(object):
 
 
     def start(self):
-        LOG.info('starting celery...')
-        commands = ('./venv/local/bin/celery', 'beat',# '--detach',
-                    '--loglevel=DEBUG',
-                    '--pidfile=' + PYNG_PIDFILE, '--config=pyng.celeryconfig')
+        LOG.debug('starting celery...')
+        commands = ('celery', '-A', 'pyng.tasks', 'worker',# '--detach'
+                    '--loglevel=DEBUG', '--pidfile=' + PYNG_PIDFILE, '--beat')
         subprocess.call(commands)
         self.running = True
-        LOG.info('done!')
+        LOG.debug('done!')
 
 
     def stop(self):
-        if self.running:
-            LOG.info('stopping celery...')
+        LOG.debug('stopping celery...')
+        try:
             os.kill(int(self.pid), signal.SIGTERM)
-            self.running = False
-            LOG.info('done!')
-        else:
-            sys.exit("Not running, nothing to stop...")
+            LOG.debug('done!')
+        except:
+            LOG.debug("Not running, nothing to stop...")
+        self.running = False
+        self.remove_pidfile()
 
 
     def restart(self):
@@ -47,15 +43,22 @@ class CeleryController(object):
         self.start()
 
 
+    def remove_pidfile(self):
+        try:
+            os.remove(PYNG_PIDFILE)
+        except:
+            pass
+
+
     def find_pid(self):
         self.pid = None
         try:
             with open(PYNG_PIDFILE, 'r') as pidfile:
                 self.pid = pidfile.readline().strip()
                 self.running = True
-                LOG.info("PID is: " + self.pid)
-        except FileNotFoundError:
-            LOG.info("PID file does not exists")
+                LOG.debug("PID is: " + self.pid)
+        except:
+            LOG.debug("PID file does not exists")
             self.running = False
 
         return(self.pid)
@@ -79,6 +82,4 @@ class CeleryController(object):
 
     def set_config(self):
         pass
-
-
 

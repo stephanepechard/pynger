@@ -29,8 +29,8 @@ class HttpStatusMonitor(Monitor):
                            'args': (self.url)
                           })
 
-    def run(self):
-        req = requests.get(self.url)
+    def execute(self):
+        req = requests.head(self.url, allow_redirects=True)
         success = req.status_code == 200
         print(success)
         return(success)

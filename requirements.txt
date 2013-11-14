@@ -1,3 +1,4 @@
 celery
+jsonschema
 redis
 requests

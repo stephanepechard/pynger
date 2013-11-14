@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from celery import task
+# pipped
+from celery import Celery
+# local
+from pyng.monitor import HttpStatusMonitor
 
-@task
-def run():
-    with open('/tmp/celery.task', 'a') as celeryfile:
-        celeryfile.write('task\n')
 
-    mon = HttpStatusMonitor('http://google.com/')
+# celery
+celery = Celery('pyng.tasks')
+celery.config_from_object('pyng.celeryconfig')
+
+
+@celery.task
+def monitorize(url):
+    mon = HttpStatusMonitor(url)
     mon_task = mon.create_task()
-    mon.run()
+    mon.execute()
