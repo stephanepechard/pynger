@@ -1,4 +1,6 @@
 venv/
+celerybeat-schedule
+
 *.py[cod]
 
 # C extensions
@@ -35,4 +37,3 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
-celerybeat-schedule
