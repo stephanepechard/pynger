@@ -20,7 +20,7 @@ setup(
     author_email='stephanepechard@gmail.com',
     packages=['pynger','pynger.test'],
     url='http://stephanepechard.github.com/pynger',
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
     scripts=['bin/pynger'],
     install_requires=['celery', 'jsonschema', 'redis', 'requests'],
     #tests_require=['nose'],
