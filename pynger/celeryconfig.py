@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .pyng import DotfileReader
+from .pynger import DotfileReader
 reader = DotfileReader()
 
 CELERYBEAT_SCHEDULE = reader.read_dotfile()

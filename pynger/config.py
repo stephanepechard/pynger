@@ -4,11 +4,11 @@
 import os
 
 # pid file of the child process
-PYNG_PIDFILE = os.path.join(os.environ['HOME'], '.pyng.pid')
+PYNGER_PIDFILE = os.path.join(os.environ['HOME'], '.pynger.pid')
 # default log file
-PYNG_LOGFILE = os.path.join(os.environ['HOME'], '.pyng.log')
+PYNGER_LOGFILE = os.path.join(os.environ['HOME'], '.pynger.log')
 # default config file
-PYNG_DOTFILE = os.path.join(os.environ['HOME'], '.pyng.json')
+PYNGER_DOTFILE = os.path.join(os.environ['HOME'], '.pynger.json')
 # time multipliers
 TIME_MULTIPLIERS = {'s': 1, 'm': 60, 'h': 60*60, 'd': 60*60*24}
 
@@ -29,7 +29,7 @@ NOTIFIERS_TYPE = {
 DOTFILE_SCHEMA = {
     'type' : "object",
     'properties' : {
-        'pyng': {
+        'pynger': {
             'type' : "array",
             'items': {
                 'type': 'object',
@@ -69,7 +69,7 @@ from logging.handlers import RotatingFileHandler
 LOG = logging.getLogger()
 LOG.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler(PYNG_LOGFILE, 'a', 1000000, 1)
+file_handler = RotatingFileHandler(PYNGER_LOGFILE, 'a', 1000000, 1)
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 LOG.addHandler(file_handler)

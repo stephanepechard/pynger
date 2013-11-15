@@ -7,7 +7,7 @@ import signal
 import subprocess
 import time
 # local
-from .config import PYNG_PIDFILE, LOG
+from .config import PYNGER_PIDFILE, LOG
 
 
 class CeleryController(object):
@@ -18,8 +18,8 @@ class CeleryController(object):
 
     def start(self):
         LOG.debug('starting celery...')
-        commands = ('celery', '-A', 'pyng.tasks', 'worker',# '--detach'
-                    '--loglevel=DEBUG', '--pidfile=' + PYNG_PIDFILE, '--beat')
+        commands = ('celery', '-A', 'pynger.tasks', 'worker',# '--detach'
+                    '--loglevel=DEBUG', '--pidfile=' + PYNGER_PIDFILE, '--beat')
         subprocess.call(commands)
         LOG.debug('done!')
 
@@ -42,7 +42,7 @@ class CeleryController(object):
 
     def remove_pidfile(self):
         try:
-            os.remove(PYNG_PIDFILE)
+            os.remove(PYNGER_PIDFILE)
         except:
             pass
 
@@ -50,7 +50,7 @@ class CeleryController(object):
     def find_pid(self):
         self.pid = None
         try:
-            with open(PYNG_PIDFILE, 'r') as pidfile:
+            with open(PYNGER_PIDFILE, 'r') as pidfile:
                 self.pid = pidfile.readline().strip()
                 LOG.debug("PID is: " + self.pid)
         except:
@@ -66,7 +66,7 @@ class CeleryController(object):
         processes = []
         pid = None
         for line in output.decode(locale.getdefaultlocale()[1]).split('\n'):
-            if PYNG_PIDFILE in line:
+            if PYNGER_PIDFILE in line:
                 first_space = line.find(' ')
                 processes.append(line[:first_space])
 

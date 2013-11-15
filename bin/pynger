@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" Script launching the Pynger main function. """
+
+# system
+import sys
+# local
+from pynger.pynger import PyngerApp
+
+pynger = PyngerApp()
+pynger.execute(sys.argv)

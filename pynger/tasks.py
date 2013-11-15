@@ -7,8 +7,8 @@ from .config import MONITORS_TYPE, LOG
 
 
 # celery
-celery = Celery('pyng.tasks')
-celery.config_from_object('pyng.celeryconfig')
+celery = Celery('pynger.tasks')
+celery.config_from_object('pynger.celeryconfig')
 
 
 @celery.task

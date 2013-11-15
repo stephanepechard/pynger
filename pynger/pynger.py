@@ -9,11 +9,11 @@ import sys
 from jsonschema import validate
 # local
 from .celerycontroller import CeleryController
-from .config import LOG, PYNG_DOTFILE, DOTFILE_SCHEMA, TIME_MULTIPLIERS
+from .config import LOG, PYNGER_DOTFILE, DOTFILE_SCHEMA, TIME_MULTIPLIERS
 
 
-class PyngApp(object):
-    """ The pyng application object, doing stuff casually. """
+class PyngerApp(object):
+    """ The Pynger application object, doing stuff casually. """
 
     def execute(self, argv):
         """ Launch the beauty beast. """
@@ -37,19 +37,19 @@ class DotfileReader(object):
     """ Extracts information from the user-given dotfile. """
 
     def read_dotfile(self):
-        pyng_tasks = {}
+        pynger_tasks = {}
         try:
-            with open(PYNG_DOTFILE, 'r') as dotfile:
+            with open(PYNGER_DOTFILE, 'r') as dotfile:
                 json_data = json.loads(dotfile.read())
                 self.validate_dotfile(json_data)
-                for json_pynger in json_data['pyng']:
+                for json_pynger in json_data['pynger']:
                     tasks = self.read_pynger(json_pynger)
-                    pyng_tasks.update(tasks)
+                    pynger_tasks.update(tasks)
                     LOG.debug("pynger data:\n" + pprint.pformat(json_pynger))
         except IOError:
             sys.exit("You need a config file: {}".format(self.dotfile))
 
-        return(pyng_tasks)
+        return(pynger_tasks)
 
 
     def read_pynger(self, pynger_dict):
@@ -79,7 +79,7 @@ class DotfileReader(object):
 
         task_dict = {
             url: {
-                'task': 'pyng.tasks.monitor',
+                'task': 'pynger.tasks.monitor',
                 'schedule': timedelta(seconds=freq_in_seconds),
                 'args': [url, mtype],
             }
@@ -88,7 +88,7 @@ class DotfileReader(object):
 
 
     def validate_dotfile(self, json_data):
-        """ Validate the .pyng.json against official structure. """
+        """ Validate the .pynger.json against official structure. """
         try:
             validate(json_data, DOTFILE_SCHEMA)
             LOG.debug("Config file is valid")
@@ -108,7 +108,7 @@ class PyngLogger(object):
     def __init__(self, logfile):
         import logging
         from logging.handlers import RotatingFileHandler
-        self.logger = logging.getLogger('pyng')
+        self.logger = logging.getLogger('pynger')
         self.logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
         file_handler = RotatingFileHandler(logfile, 'a', 1000000, 1)
