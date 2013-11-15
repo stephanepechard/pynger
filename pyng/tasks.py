@@ -3,7 +3,7 @@
 # pipped
 from celery import Celery
 # local
-from pyng.monitor import HttpStatusMonitor
+from .config import MONITORS_TYPE, LOG
 
 
 # celery
@@ -12,7 +12,7 @@ celery.config_from_object('pyng.celeryconfig')
 
 
 @celery.task
-def monitorize(url):
-    mon = HttpStatusMonitor(url)
-    mon_task = mon.create_task()
-    mon.execute()
+def monitor(url, mtype):
+    mon = MONITORS_TYPE[mtype]()
+    success = mon.execute(url)
+    LOG.info("pynging {}: {}".format(url, "SUCCESS" if success else "FAILURE"))

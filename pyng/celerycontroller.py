@@ -13,7 +13,6 @@ from .config import PYNG_PIDFILE, LOG
 class CeleryController(object):
 
     def __init__(self):
-        self.running = False
         self.pid = self.find_pid()
 
 
@@ -22,7 +21,6 @@ class CeleryController(object):
         commands = ('celery', '-A', 'pyng.tasks', 'worker',# '--detach'
                     '--loglevel=DEBUG', '--pidfile=' + PYNG_PIDFILE, '--beat')
         subprocess.call(commands)
-        self.running = True
         LOG.debug('done!')
 
 
@@ -33,7 +31,6 @@ class CeleryController(object):
             LOG.debug('done!')
         except:
             LOG.debug("Not running, nothing to stop...")
-        self.running = False
         self.remove_pidfile()
 
 
@@ -55,11 +52,9 @@ class CeleryController(object):
         try:
             with open(PYNG_PIDFILE, 'r') as pidfile:
                 self.pid = pidfile.readline().strip()
-                self.running = True
                 LOG.debug("PID is: " + self.pid)
         except:
             LOG.debug("PID file does not exists")
-            self.running = False
 
         return(self.pid)
 

@@ -7,12 +7,5 @@ import sys
 # local
 from pyng.pyng import PyngApp
 
-
-def main():
-    pyng = PyngApp()
-    pyng.check_args(sys.argv)
-    pyng.run()
-
-
-if __name__ == '__main__':
-    main()
+pyng = PyngApp()
+pyng.execute(sys.argv)

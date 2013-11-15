@@ -7,32 +7,13 @@ from datetime import timedelta
 import requests
 
 
-class Monitor(object):
-
-    def __init__(self):
-        self.mon_type = None
-
-    def run(self):
-        pass
+#class Monitor(object):
 
 
+class HttpStatusMonitor(object):
 
-class HttpStatusMonitor(Monitor):
-
-    def __init__(self, url, freq=1):
-        self.url = url
-        self.freq = freq
-
-    def create_task(self):
-        return({self.url: {'task': 'pyng.monitor.run',
-                           'schedule': timedelta(minutes=self.freq)},
-                           'args': (self.url)
-                          })
-
-    def execute(self):
-        req = requests.head(self.url, allow_redirects=True)
-        success = req.status_code == 200
-        print(success)
-        return(success)
+    def execute(self, url):
+        req = requests.head(url, allow_redirects=True)
+        return(req.status_code == 200)
 
         # in case of failure, look at celery retry capabilities
