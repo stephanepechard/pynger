@@ -36,52 +36,60 @@ class PyngerApp(object):
 class DotfileReader(object):
     """ Extracts information from the user-given dotfile. """
 
-    def read_dotfile(self):
-        pynger_tasks = {}
+    pynger_data = None
+
+    def __init__(self):
         try:
             with open(PYNGER_DOTFILE, 'r') as dotfile:
                 json_data = json.loads(dotfile.read())
                 self.validate_dotfile(json_data)
-                for json_pynger in json_data['pynger']:
-                    tasks = self.read_pynger(json_pynger)
-                    pynger_tasks.update(tasks)
-                    LOG.debug("pynger data:\n" + pprint.pformat(json_pynger))
+                self.pynger_data = json_data['pynger']
         except IOError:
             sys.exit("You need a config file: {}".format(self.dotfile))
 
+
+    def extract_notifiers(self, name):
+        notifiers = []
+        for json_pynger in self.pynger_data:
+            if json_pynger['name'] == name:
+                for notifier in json_pynger['notifiers']:
+                    notifiers.append(notifier)
+        return(notifiers)
+
+
+    def extract_tasks(self):
+        pynger_tasks = {}
+        for json_pynger in self.pynger_data:
+            tasks = self.read_monitors(json_pynger)
+            pynger_tasks.update(tasks)
         return(pynger_tasks)
 
 
-    def read_pynger(self, pynger_dict):
+    def read_monitors(self, pynger_dict):
         tasks = {}
         try:
-            self.name = pynger_dict['name']
             for monitor in pynger_dict['monitors']:
-                task_dict = self.create_task(monitor['url'], monitor['freq'], monitor['type'])
+                task_dict = self.create_monitor_task(monitor, pynger_dict['name'])
                 tasks.update(task_dict)
 
-            #for notifier in pynger_dict['notifiers']:
-                #notif = NOTIFIERS_TYPE[notifier['type']]()
-                #notif.address = notifier['address']
-                #self.notifiers.append(notif)
         except KeyError:
             self.invalid_dotfile()
 
         return(tasks)
 
 
-    def create_task(self, url, freq_in_strings, mtype):
+    def create_monitor_task(self, monitor, name):
         try:
-            multiplier = TIME_MULTIPLIERS[freq_in_strings[-1]]
-            freq_in_seconds = int(freq_in_strings[:-1]) * multiplier
+            multiplier = TIME_MULTIPLIERS[monitor['freq'][-1]]
+            freq_in_seconds = int(monitor['freq'][:-1]) * multiplier
         except:
             self.invalid_dotfile()
 
         task_dict = {
-            url: {
+            monitor['url']: {
                 'task': 'pynger.tasks.monitor',
                 'schedule': timedelta(seconds=freq_in_seconds),
-                'args': [url, mtype],
+                'args': [name, monitor['url'], monitor['type']],
             }
         }
         return(task_dict)
@@ -100,39 +108,3 @@ class DotfileReader(object):
         """ Warn the user about the dotfile and exits. """
         LOG.error("Invalid config file")
         sys.exit("ERROR: Your config file is not valid!")
-
-
-class PyngLogger(object):
-    logger = None
-
-    def __init__(self, logfile):
-        import logging
-        from logging.handlers import RotatingFileHandler
-        self.logger = logging.getLogger('pynger')
-        self.logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-        file_handler = RotatingFileHandler(logfile, 'a', 1000000, 1)
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-        steam_handler = logging.StreamHandler()
-        steam_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(steam_handler)
-
-    def debug(self, msg, *args, **kwargs):
-        self.logger.debug(msg, args, kwargs)
-
-    def info(self, msg, *args, **kwargs):
-        self.logger.info(msg, args, kwargs)
-
-    def warning(self, msg, *args, **kwargs):
-        self.logger.warning(msg, args, kwargs)
-
-    def error(self, msg, *args, **kwargs):
-        self.logger.error(msg, args, kwargs)
-
-    def critical(self, msg, *args, **kwargs):
-        self.logger.critical(msg, args, kwargs)
-
-    def exception(self, msg, *args, **kwargs):
-        self.logger.exception(msg, args, kwargs)

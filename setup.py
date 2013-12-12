@@ -18,7 +18,7 @@ setup(
     description='My pynger project',
     author='Stéphane Péchard',
     author_email='stephanepechard@gmail.com',
-    packages=['pynger','pynger.test'],
+    packages=['pynger'],
     url='http://stephanepechard.github.com/pynger',
     long_description=open('README.md').read(),
     scripts=['bin/pynger'],

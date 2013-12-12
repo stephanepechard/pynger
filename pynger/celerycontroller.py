@@ -7,7 +7,7 @@ import signal
 import subprocess
 import time
 # local
-from .config import PYNGER_PIDFILE, LOG
+from .config import PYNGER_PIDFILE, PYNGER_CELERYLOGFILE, LOG
 
 
 class CeleryController(object):
@@ -18,17 +18,18 @@ class CeleryController(object):
 
     def start(self):
         LOG.debug('starting celery...')
-        commands = ('celery', '-A', 'pynger.tasks', 'worker',# '--detach'
-                    '--loglevel=DEBUG', '--pidfile=' + PYNGER_PIDFILE, '--beat')
+        commands = ('celery', '-A', 'pynger.tasks', 'worker', '--detach',
+                    '--loglevel=INFO', '--pidfile=' + PYNGER_PIDFILE, 
+                    '--logfile=' + PYNGER_CELERYLOGFILE, '--beat')
         subprocess.call(commands)
-        LOG.debug('done!')
+        LOG.debug('Pynger has started')
 
 
     def stop(self):
         LOG.debug('stopping celery...')
         try:
             os.kill(int(self.pid), signal.SIGTERM)
-            LOG.debug('done!')
+            LOG.debug('Pynger has stopped')
         except:
             LOG.debug("Not running, nothing to stop...")
         self.remove_pidfile()
@@ -36,6 +37,7 @@ class CeleryController(object):
 
     def restart(self):
         self.stop()
+        self.kill_all()
         time.sleep(2)
         self.start()
 
@@ -65,16 +67,21 @@ class CeleryController(object):
         output = ps.communicate()[0]
         processes = []
         pid = None
-        for line in output.decode(locale.getdefaultlocale()[1]).split('\n'):
+        for sline in output.decode(locale.getdefaultlocale()[1]).split('\n'):
+            line = sline.strip()
             if PYNGER_PIDFILE in line:
                 first_space = line.find(' ')
                 processes.append(line[:first_space])
 
         if len(processes) > 1:
+            # look at how many workers are launched before warning!
             LOG.warning("You have more than one celery process, this is not good...")
+            LOG.warning("Processes are: {}".format(processes))
         return(processes)
 
 
-    def set_config(self):
-        pass
+    def kill_all(self):
+        for proc in self.running_celerys():
+            os.kill(int(proc), signal.SIGTERM)
+            LOG.warning("Killing process " + proc)
 

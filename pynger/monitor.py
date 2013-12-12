@@ -13,7 +13,11 @@ import requests
 class HttpStatusMonitor(object):
 
     def execute(self, url):
-        req = requests.head(url, allow_redirects=True)
-        return(req.status_code == 200)
+        status = True
+        try:
+            req = requests.head(url, allow_redirects=True)
+            status = req.status_code == 200
+        except requests.exceptions.ConnectionError:
+            status = False
 
-        # in case of failure, look at celery retry capabilities
+        return(status)
